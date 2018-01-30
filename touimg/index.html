@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        img{
+            width: 100%;
+            height: auto;
+        }
+        
+    </style>
+</head>
+<body>
+
+    <script>
+        let datas={
+            page:1,
+            Tag:'body'
+        }
+        class TouImg{
+            constructor(file){
+                Object.assign(datas,file)
+                this.datas=datas
+                this.init()
+
+            }
+            init(){
+                this.getJson()
+
+            }
+            myajax(url){
+                return new Promise((resolve,reject)=>{
+                    let xml=null
+                if(window.XMLHttpRequest){
+                    xml=new XMLHttpRequest()
+                }
+                else{
+                    xml=new ActiveXObject('Mircosoft.XMLHTTP')
+                }
+                xml.open('GET',url)
+                xml.send(null)
+                if(xml.onreadystatechange=function(){
+                    if(xml.readyState!==4)return;
+                    if(xml.status==200){
+                        resolve(xml.responseText)                      
+                    }
+                    else{
+                        reject("error")
+                    }
+                });
+            
+                })
+             
+
+            }
+              getJson(){
+                console.log(111)
+                let asyncImg=async ()=>{
+                  this.imgs=await this.myajax('http://localhost:8090/mock')
+                  this.myimgs=JSON.parse(this.imgs)
+                  if(this.datas.flag===true){
+                    this.myimgs.map((data,index)=>{
+                       
+                        if(index<this.datas.page){
+                           this.loadimg(data.img)
+                        }
+                    })
+
+                  }
+                  else{
+                    this.myimgs.map((data,index)=>{
+                      
+                           this.loadimg(data.img)
+                        
+                    })
+
+                  }
+                  this.mytouchstart()
+                }
+                asyncImg()
+
+
+            }
+            mytouchstart(){
+                document.addEventListener('touchstart',(event)=>{
+                    this.start=event.touches[0].clientY
+                    this.mytouchmove()
+
+                })
+            }
+            mytouchmove(){
+                document.addEventListener('touchmove',(event)=>{
+                    this.end=event.touches[0].clientY
+                    this.mytouchend()
+                })
+            }
+            mytouchend(){
+                this.abs=Math.abs(this.start-this.end)
+                if(this.abs>100){
+                    this.datas.page++
+                   
+                   if(this.datas.page<this.myimgs.length){
+                      
+                      
+                       this.loadimg(this.myimgs[this.datas.page].img)
+                   }
+                }
+            }
+         loadimg(url){
+             return new Promise((resolve,reject)=>{
+                 let Imgs=new Image()
+                 Imgs.onload=function(){
+                     resolve(Imgs)
+                 }
+                 Imgs.onerror=function(){
+                     reject("can't Error")
+                 }
+                 Imgs.src=url
+               
+                 document.body.append(Imgs)
+             })
+
+         }
+        }
+        new TouImg({
+            page:1,
+            flag:true,
+            Tag:'body'
+        })
+    </script>
+</body>
+</html>
